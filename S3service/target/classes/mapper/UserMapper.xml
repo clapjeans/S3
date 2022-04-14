@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- JAVA와 연결할 Mapper 파일 설정 -->
+<mapper namespace="kopo.poly.persistance.mapper.IUserMapper">
+
+    <!-- 회원가입 정보 등록 -->
+    <insert  id="insertUser" parameterType="UserInfoDTO"> INSERT INTO USER_INFO(USER_ID, USER_NAME, PASSWORD, EMAIL,
+                                                                                   ADDR1, ADDR2, REG_ID, CHG_ID
+                                                                                   )
+                                                             VALUES (#{user_id}, #{user_name}, #{password}, #{email},
+                                                                     #{addr1}, #{addr2}, #{user_id},
+                                                                     #{user_id}) </insert>
+    <!---이메일 유효 체크값 -->
+    <select  id="getUserExistForAJAX" parameterType="UserInfoDTO"
+            resultType="UserInfoDTO"> SELECT (CASE WHEN COUNT(1) THEN 'Y' ELSE 'N' END ) AS EXISTS_YN FROM USER_INFO WHERE USER_ID = #{user_id} </select>
+
+    <!---회원가입 로그인하기  -->
+    <select  id="getUserLoginCheck"  parameterType="UserInfoDTO" resultType="UserInfoDTO">SELECT EMAIL,
+                                                                                               USER_NAME,
+                                                                                                 USER_ID FROM USER_INFO WHERE USER_ID = #{user_id}AND PASSWORD = #{password} </select>
+
+    <!-- 유저 비밀번호변경  -->
+    <update id="UpdateUserPage" parameterType="UserInfoDTO">
+        UPDATE USER_INFO
+        SET USER_NAME = #{user_name},
+            EMAIL = #{email},
+            ADDR1 = #{addr1},
+            ADDR2= #{addr2}
+        WHERE USER_ID = #{user_id}
+
+    </update>
+
+    <!-- 회원탈퇴  -->
+    <delete parameterType="UserInfoDTO" id="deleteUserInfo">DELETE FROM USER_INFO WHERE USER_ID=#{user_id} </delete>
+
+    <!--사용자 마이페이지 정보가져오기 -->
+    <select  id="getUserInfo"  parameterType="UserInfoDTO" resultType="UserInfoDTO">SELECT  USER_NAME, PASSWORD, EMAIL,
+                                                                                                 ADDR1, ADDR2 FROM USER_INFO WHERE USER_ID = #{user_id}  </select>
+
+    <!--사용자 비밀번호변경-->
+    <update id="updateUserPw" parameterType="UserInfoDTO">
+        UPDATE USER_INFO
+        SET PASSWORD = #{password}
+        WHERE USER_NAME = #{user_name}AND EMAIL = #{email}
+
+    </update>
+
+    <!--사용자 아이디찾기-->
+    <select id="findUserId" parameterType="UserInfoDTO"
+            resultType="UserInfoDTO">
+        SELECT USER_ID
+        FROM USER_INFO
+        WHERE EMAIL=#{email} AND USER_NAME= #{user_name}
+    </select>
+
+    <!--사용자 리스트가져오기-->
+    <select id="getUserList" parameterType="UserInfoDTO"
+            resultType="UserInfoDTO">
+
+        SELECT U.USER_ID, U.USER_NAME,B.SAVE_THUMFILE_PATH FROM USER_INFO U
+                                                                    LEFT JOIN BORD_FILE_INFO B ON U.USER_ID = B.USER_ID
+        WHERE U.USER_ID != #{user_id}
+        UNION
+        SELECT U.USER_ID, U.USER_NAME,B.SAVE_THUMFILE_PATH FROM USER_INFO U
+                                                                    RIGHT JOIN BORD_FILE_INFO B ON U.USER_ID = B.USER_ID
+        WHERE U.USER_ID != #{user_id}
+
+
+    </select>
+</mapper>
+
